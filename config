@@ -1,0 +1,37 @@
+Host jump jumphost.tvbeat.com
+  HostName jumphost.tvbeat.com
+  Port 443
+  User vlado
+  IdentityFile /home/vlado/.ssh/id_ed25519
+  ServerAliveInterval 70
+  ServerAliveCountMax 2
+
+Host *+*
+  ProxyCommand ssh -W $(echo %h | sed 's/^.*+//;s/^\([^:]*$\)/\1:22/') $(echo %h | sed 's/+[^+]*$//;s/\([^+%%]*\)%%\([^+]*\)$/\2 -l \1/;s/:\([^:+]*\)$/ -p \1/')
+  User vlado
+  IdentityFile /home/vlado/.ssh/id_ed25519
+
+Host megalodon-int-dev.node
+  HostName jump+megalodon-int-dev.node
+
+Host influxprod
+  HostName influx2dev-mon-dev.node
+  ProxyJump jump
+
+Host megalodon
+    HostName megalodon-int-dev.node
+    ProxyCommand ssh jumphost.tvbeat.com -W %h:%p -l vlado
+    User vlado
+    IdentityFile ~/.ssh/id_ed25519
+
+Host kraken
+    HostName kraken-int-dev.node
+    ProxyCommand ssh jumphost.tvbeat.com -W %h:%p -l vlado
+    User vlado
+    IdentityFile ~/.ssh/1_id_ed25519
+    LocalForward 18086 localhost:8086
+    LocalForward 11022 localhost:22
+    LocalForward 28086 ingest.influx.service:8086
+    LocalForward 38086 influx2dev-mon-dev.node:8086
+    LocalForward 48086 infra.influx.service:8086
+    LocalForward 12086 di.influx2.service.fsn1-hetz.consul.tvbeat.com:8086
